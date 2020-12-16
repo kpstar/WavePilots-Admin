@@ -13,7 +13,9 @@ admin.initializeApp();
 // firebase functions:config:set gmail.email="myusername@gmail.com" gmail.password="secretpassword"
 
 const gmailEmail = 'info@wavepilots.com'; // functions.config().gmail.email;
-const gmailPassword = 'Wavepilots23'; // functions.config().gmail.password;
+// const gmailPassword = 'Wavepilots23'; // functions.config().gmail.password;
+const gmailPassword = 'yatvnuyrjqaujcyu'; // functions.config().gmail.password;
+
 
 const mailTransport = nodemailer.createTransport({
     service: 'gmail',
@@ -126,6 +128,35 @@ exports.sendResetPasswordEmail = functions.https.onCall(async (data, context) =>
         replyTo: 'noreply@wavepilots.com',
         to: email,
         subject: `Reset your password for ${APP_NAME}!`,
+        html: renderedHtml
+    };
+    console.log(mailOptions);
+
+    await mailTransport.sendMail(mailOptions);
+    console.log('New reset email sent to:', email);
+
+    return null;
+})
+
+/**
+ * reset password
+ */
+exports.sendInviteEmail = functions.database.ref('/invites/{uid}/{key}').onCreate(async (snapshot, context) => {
+    
+    let data = snapshot.val();
+    if (data.isEmail != true) return;
+    console.log("Concept data = ", data);
+    let invitor = data.Invitor;
+    let email = data.User;
+
+    let resetLink = "https://google.com";
+    let renderedHtml = await ejs.renderFile('./templates/invite.ejs');
+
+    const mailOptions = {
+        from: `${APP_NAME} <noreply@wavepilots.com>`,
+        replyTo: 'noreply@wavepilots.com',
+        to: email,
+        subject: `${invitor} has sent you an invite to join ${APP_NAME}!`,
         html: renderedHtml
     };
     console.log(mailOptions);
